@@ -1,0 +1,163 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="980" viewBox="0 0 1800 980">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#334155"/>
+    </marker>
+    <marker id="arrow-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563eb"/>
+    </marker>
+    <marker id="arrow-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#15803d"/>
+    </marker>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#0f172a" flood-opacity="0.10"/>
+    </filter>
+    <style>
+      .title { font: 700 30px Arial, Helvetica, sans-serif; fill: #0f172a; }
+      .subtitle { font: 400 15px Arial, Helvetica, sans-serif; fill: #64748b; }
+      .section { font: 700 17px Arial, Helvetica, sans-serif; fill: #0f172a; }
+      .box-title { font: 700 17px Arial, Helvetica, sans-serif; fill: #0f172a; }
+      .box-text { font: 400 14px Arial, Helvetica, sans-serif; fill: #334155; }
+      .small { font: 400 12px Arial, Helvetica, sans-serif; fill: #64748b; }
+      .tiny { font: 400 11px Arial, Helvetica, sans-serif; fill: #64748b; }
+      .label { font: 700 12px Arial, Helvetica, sans-serif; fill: #475569; letter-spacing: 0.8px; }
+      .line { stroke: #334155; stroke-width: 2.2; fill: none; marker-end: url(#arrow); }
+      .line-blue { stroke: #2563eb; stroke-width: 2.4; fill: none; marker-end: url(#arrow-blue); }
+      .line-green { stroke: #15803d; stroke-width: 2.4; fill: none; marker-end: url(#arrow-green); }
+      .dash { stroke: #94a3b8; stroke-width: 1.6; stroke-dasharray: 7 6; fill: none; }
+      .box { stroke: #cbd5e1; stroke-width: 1.4; rx: 9; filter: url(#shadow); }
+      .plain { stroke: #cbd5e1; stroke-width: 1.4; rx: 9; }
+    </style>
+  </defs>
+
+  <rect width="1800" height="980" fill="#ffffff"/>
+  <text x="70" y="62" class="title">Video-to-B-rep and URDF Assembly</text>
+  <text x="70" y="90" class="subtitle">Part-level CAD generation with explicit SE(3) kinematics and differentiable forward kinematics</text>
+
+  <!-- Input -->
+  <text x="70" y="145" class="section">1. Multi-view observation</text>
+  <rect x="70" y="175" width="230" height="170" class="box" fill="#f8fafc"/>
+  <text x="95" y="207" class="box-title">Synchronized videos</text>
+  <rect x="95" y="230" width="82" height="62" rx="4" fill="#dbeafe" stroke="#93c5fd"/>
+  <rect x="193" y="230" width="82" height="62" rx="4" fill="#dbeafe" stroke="#93c5fd"/>
+  <path d="M105 278 L122 254 L137 271 L151 248 L170 278" stroke="#2563eb" stroke-width="2" fill="none"/>
+  <path d="M203 278 L220 254 L236 271 L249 250 L267 278" stroke="#2563eb" stroke-width="2" fill="none"/>
+  <text x="103" y="314" class="small">cam01 / RGB frames</text>
+  <text x="201" y="314" class="small">cam02 / RGB frames</text>
+  <text x="95" y="333" class="tiny">optional: masks, depth, calibration</text>
+
+  <path d="M300 260 L350 260" class="line"/>
+
+  <!-- Encoders -->
+  <text x="350" y="145" class="section">2. Video representation</text>
+  <rect x="350" y="175" width="250" height="170" class="box" fill="#eff6ff"/>
+  <text x="375" y="207" class="box-title">V-JEPA ViT-B encoders</text>
+  <rect x="375" y="230" width="95" height="53" class="plain" fill="#ffffff"/>
+  <rect x="480" y="230" width="95" height="53" class="plain" fill="#ffffff"/>
+  <text x="392" y="262" class="box-text">cam01</text>
+  <text x="497" y="262" class="box-text">cam02</text>
+  <path d="M422 283 L422 304 M527 283 L527 304" stroke="#2563eb" stroke-width="1.8"/>
+  <text x="378" y="325" class="small">frozen or partially fine-tuned</text>
+
+  <path d="M600 260 L650 260" class="line"/>
+
+  <rect x="650" y="175" width="250" height="170" class="box" fill="#eef2ff"/>
+  <text x="675" y="207" class="box-title">Multi-view fusion</text>
+  <rect x="680" y="235" width="190" height="35" rx="6" fill="#e0e7ff" stroke="#a5b4fc"/>
+  <text x="713" y="258" class="box-text">view embeddings</text>
+  <rect x="680" y="283" width="190" height="35" rx="6" fill="#e0e7ff" stroke="#a5b4fc"/>
+  <text x="720" y="306" class="box-text">Transformer encoder</text>
+  <text x="675" y="333" class="small">shared video token sequence</text>
+
+  <path d="M900 260 L950 260" class="line"/>
+
+  <!-- Slots -->
+  <text x="950" y="145" class="section">3. Part-centric latent space</text>
+  <rect x="950" y="175" width="280" height="170" class="box" fill="#f8fafc"/>
+  <text x="975" y="207" class="box-title">Part slots</text>
+  <g fill="#fef3c7" stroke="#f59e0b">
+    <rect x="975" y="230" width="52" height="38" rx="5"/><rect x="1037" y="230" width="52" height="38" rx="5"/>
+    <rect x="1099" y="230" width="52" height="38" rx="5"/><rect x="1161" y="230" width="52" height="38" rx="5"/>
+  </g>
+  <text x="988" y="254" class="small">s₀</text><text x="1050" y="254" class="small">s₁</text>
+  <text x="1112" y="254" class="small">s₂</text><text x="1174" y="254" class="small">s₃</text>
+  <text x="975" y="300" class="box-text">one slot = one candidate link</text>
+  <text x="975" y="326" class="small">geometry condition + kinematic node</text>
+
+  <!-- Matching -->
+  <path d="M1090 345 L1090 392" class="line"/>
+  <rect x="950" y="392" width="280" height="78" class="plain" fill="#fff7ed"/>
+  <text x="975" y="422" class="box-title">Hungarian matching</text>
+  <text x="975" y="447" class="small">slot ↔ Fusion body / URDF link</text>
+
+  <!-- Ground truth -->
+  <text x="70" y="425" class="section">Supervision from paired Fusion data</text>
+  <rect x="70" y="455" width="330" height="195" class="box" fill="#f8fafc"/>
+  <text x="95" y="487" class="box-title">Per-part targets</text>
+  <text x="95" y="520" class="box-text">local link_i.step / .smt</text>
+  <text x="95" y="548" class="box-text">part_mapping.json</text>
+  <text x="95" y="576" class="box-text">assembly.urdf</text>
+  <text x="95" y="604" class="box-text">masks, depth, camera calibration</text>
+  <text x="95" y="632" class="small">assembly.step is validation only</text>
+  <path d="M400 540 L950 430" class="dash"/>
+
+  <!-- Branch split -->
+  <path d="M1090 470 L1090 520" class="line"/>
+  <path d="M1090 520 L730 520 L730 570" class="line-blue"/>
+  <path d="M1090 520 L1450 520 L1450 570" class="line-green"/>
+  <text x="765" y="510" class="label">B-REP GEOMETRY</text>
+  <text x="1425" y="510" class="label">KINEMATICS</text>
+
+  <!-- BRep branch -->
+  <rect x="520" y="570" width="420" height="275" class="box" fill="#eff6ff" stroke="#93c5fd"/>
+  <text x="550" y="606" class="box-title">B-rep branch: conditional diffusion</text>
+  <rect x="555" y="635" width="160" height="58" class="plain" fill="#ffffff"/>
+  <text x="581" y="660" class="box-text">B-rep encoder</text>
+  <text x="586" y="680" class="small">STEP → latent</text>
+  <rect x="745" y="635" width="160" height="58" class="plain" fill="#ffffff"/>
+  <text x="769" y="660" class="box-text">BrepGen diffusion</text>
+  <text x="771" y="680" class="small">latent + slot condition</text>
+  <path d="M715 664 L745 664" class="line-blue"/>
+  <rect x="555" y="720" width="350" height="75" class="plain" fill="#dbeafe"/>
+  <text x="580" y="749" class="box-text">topology + surfaces + curves</text>
+  <text x="580" y="774" class="box-text">solid / faces / edges / vertices</text>
+  <path d="M825 693 L825 720" class="line-blue"/>
+  <text x="550" y="826" class="small">decode each slot independently → link_i.step</text>
+
+  <!-- URDF branch -->
+  <rect x="1240" y="570" width="420" height="275" class="box" fill="#f0fdf4" stroke="#86efac"/>
+  <text x="1270" y="606" class="box-title">URDF branch: SE(3) graph reasoning</text>
+  <rect x="1275" y="635" width="160" height="58" class="plain" fill="#ffffff"/>
+  <text x="1305" y="660" class="box-text">Graph Transformer</text>
+  <text x="1313" y="680" class="small">parent-child edges</text>
+  <rect x="1455" y="635" width="160" height="58" class="plain" fill="#ffffff"/>
+  <text x="1491" y="660" class="box-text">SE(3) edge head</text>
+  <text x="1481" y="680" class="small">Rₚ꜀, tₚ꜀, axis, limits</text>
+  <path d="M1435 664 L1455 664" class="line-green"/>
+  <rect x="1275" y="720" width="340" height="75" class="plain" fill="#dcfce7"/>
+  <text x="1300" y="749" class="box-text">differentiable forward kinematics</text>
+  <text x="1300" y="774" class="box-text">T_world,link = FK(T_parent,child)</text>
+  <path d="M1535 693 L1535 720" class="line-green"/>
+  <text x="1270" y="826" class="small">export links + joints → generated_assembly.urdf</text>
+
+  <!-- Output -->
+  <path d="M730 845 L730 900 L1090 900" class="line-blue"/>
+  <path d="M1450 845 L1450 900 L1090 900" class="line-green"/>
+  <rect x="870" y="900" width="440" height="54" rx="8" fill="#0f172a"/>
+  <text x="950" y="933" style="font:700 16px Arial;fill:#ffffff">local STEP parts + generated URDF</text>
+
+  <!-- Objective strip -->
+  <rect x="70" y="715" width="330" height="140" class="plain" fill="#fff"/>
+  <text x="95" y="748" class="box-title">Training objectives</text>
+  <text x="95" y="775" class="small">L_match + L_contrastive + L_brep</text>
+  <text x="95" y="798" class="small">+ L_SE(3) + L_FK + L_render</text>
+  <text x="95" y="821" class="small">geometry stays link-local</text>
+  <text x="95" y="842" class="small">assembly stays in URDF/FK</text>
+
+  <!-- Legend -->
+  <rect x="1420" y="60" width="310" height="78" class="plain" fill="#ffffff"/>
+  <line x1="1445" y1="88" x2="1495" y2="88" class="line-blue"/>
+  <text x="1510" y="93" class="small">B-rep geometry path</text>
+  <line x1="1445" y1="116" x2="1495" y2="116" class="line-green"/>
+  <text x="1510" y="121" class="small">URDF kinematics path</text>
+</svg>

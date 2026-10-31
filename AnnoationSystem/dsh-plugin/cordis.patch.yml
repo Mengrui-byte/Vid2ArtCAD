@@ -1,0 +1,3 @@
+- insert:
+    - id: vid2artcad-annotation-tools
+      name: '@vid2artcad/annotation-dsh-plugin'

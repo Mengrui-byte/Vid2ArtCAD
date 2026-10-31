@@ -1,0 +1,11 @@
+.DS_Store
+.env
+.cache/
+node_modules/
+output/**
+!output/.gitkeep
+output/videos/**
+output/designs/**
+coverage/
+.dsh/
+*.log

@@ -1,0 +1,5 @@
+imageio
+imageio-ffmpeg
+matplotlib
+numpy
+trimesh

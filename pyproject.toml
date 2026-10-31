@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "vid2artcad-annotation-pipeline"
+version = "0.2.0"
+description = "Phase-based annotation pipeline for Vid2ArtCAD"
+requires-python = ">=3.9"
+dependencies = [
+    "numpy",
+    "scipy",
+    "trimesh",
+    "mujoco",
+    "imageio",
+    "imageio-ffmpeg",
+]
+
+[project.optional-dependencies]
+propagation = ["opencv-python-headless>=4.8,<5"]
+sam2 = ["torch>=2.5", "torchvision>=0.20"]
+tracking = ["torch>=2.5", "torchvision>=0.20"]
+vjepa = ["torch>=2.5", "torchvision>=0.20", "pyyaml", "einops", "beartype", "iopath", "timm", "decord"]
+
+[project.scripts]
+vid2artcad = "pipeline.cli.main:main"
+
+[tool.setuptools.packages.find]
+include = ["pipeline*"]
+
+[tool.setuptools.package-data]
+"pipeline.render" = ["review.html"]

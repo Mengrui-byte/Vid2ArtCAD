@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Vid2ArtCAD 标注管线</title>
+  <style>
+    :root { color-scheme: light; --ink:#202a32; --muted:#59666e; --line:#d8e0e2; --paper:#f4f7f6; --white:#fff; --green:#087e68; --orange:#c96532; --blue:#346c9a; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--paper); color:var(--ink); font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+    header { background:#173d38; color:white; padding:34px max(22px, calc((100vw - 1040px)/2)); }
+    header p { margin:8px 0 0; color:#d6e8e3; max-width:760px; }
+    h1 { font-size:30px; line-height:1.2; margin:0; }
+    main { max-width:1040px; margin:26px auto 56px; padding:0 22px; }
+    h2 { font-size:21px; margin:30px 0 12px; }
+    p { margin:8px 0; }
+    code { font: .9em ui-monospace,SFMono-Regular,Menlo,monospace; overflow-wrap:anywhere; }
+    .lead { font-size:18px; }
+    .flow { display:grid; grid-template-columns:repeat(3,1fr); border:1px solid var(--line); background:var(--white); }
+    .step { min-height:132px; padding:16px; border-right:1px solid var(--line); border-bottom:1px solid var(--line); }
+    .step:nth-child(3n) { border-right:0; }
+    .step:nth-last-child(-n+3) { border-bottom:0; }
+    .num { color:var(--green); font-weight:700; font-size:13px; }
+    .step h3 { margin:3px 0 5px; font-size:16px; }
+    .step p { color:var(--muted); font-size:14px; margin:0; }
+    .cols { display:grid; grid-template-columns:1fr 1fr; gap:24px; }
+    .plain { border-top:2px solid var(--green); padding-top:10px; }
+    .plain.orange { border-color:var(--orange); }
+    .plain h3 { margin:0 0 6px; font-size:17px; }
+    .note { padding:14px 16px; border-left:4px solid var(--blue); background:#e9f1f6; }
+    pre { margin:10px 0; padding:14px; overflow:auto; background:#202a32; color:#e9f3f0; font-size:13px; line-height:1.55; }
+    ul { margin:8px 0; padding-left:21px; }
+    footer { color:var(--muted); border-top:1px solid var(--line); padding-top:14px; margin-top:32px; font-size:13px; }
+    @media (max-width:680px) { header { padding:26px 20px; } h1 { font-size:26px; } .flow { grid-template-columns:1fr 1fr; } .step,.step:nth-child(3n) { border-right:1px solid var(--line); border-bottom:1px solid var(--line); } .step:nth-child(2n) { border-right:0; } .step:nth-last-child(-n+3) { border-bottom:1px solid var(--line); } .step:last-child { border-bottom:0; } .cols { grid-template-columns:1fr; gap:14px; } }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Vid2ArtCAD 标注管线</h1>
+    <p>从 CAD 装配和关节定义出发，生成可回放的多视角运动视频及像素级部件标签，并通过质量门控整理成数据集。</p>
+  </header>
+  <main>
+    <p class="lead"><strong>当前主线产出的是合成真值（synthetic GT）</strong>，不是人工画框，也不是视觉模型预测的 mask。</p>
+    <p>对视频中的每个像素，管线可以提供它属于哪个 CAD link；同时保存深度、部件可见性/轨迹元数据、相机参数和驱动运动状态。</p>
+
+    <h2>核心流程</h2>
+    <section class="flow" aria-label="标注数据流">
+      <article class="step"><span class="num">01 · 输入</span><h3>CAD 装配</h3><p><code>assembly.json</code>、装配网格和部件 OBJ。</p></article>
+      <article class="step"><span class="num">02 · 结构</span><h3>规范运动学</h3><p>Occurrence/link、关节 DOF、运动学树及闭环约束。</p></article>
+      <article class="step"><span class="num">03 · 动作</span><h3>轨迹与回放</h3><p>生成 q(t)，求解闭环，并在 MuJoCo 中核对 FK。</p></article>
+      <article class="step"><span class="num">04 · 影像</span><h3>多视角渲染</h3><p>输出同步 RGB 视频和逐视角相机标定。</p></article>
+      <article class="step"><span class="num">05 · 标签</span><h3>派生像素真值</h3><p>Segmentation 映射到稳定 link ID，并导出深度与轨迹记录。</p></article>
+      <article class="step"><span class="num">06 · 发布</span><h3>验收与打包</h3><p>校验视频、标签、运动学和 checksums，生成 manifest / split。</p></article>
+    </section>
+
+    <h2>标注结果长什么样</h2>
+    <pre>samples/&lt;asset&gt;_multiview/
+  rgb_cam01.mp4, rgb_cam02.mp4       # 多视角运动视频
+  camera_cam01.json, camera_cam02.json
+  motion.npz, timestamps.npy         # q(t)、link 位姿和时间戳
+  labels/
+    part_id_cam01/000000.png         # uint16 像素级部件 ID
+    depth_cam01/000000.npz           # 压缩 float32 深度（key: depth）
+    tracks_cam01.jsonl               # 每帧可见部件元数据
+    ...                              # cam02 同理
+    quality.json</pre>
+    <p><code>part_id</code> 编码：<code>0</code> 是背景，<code>1..N</code> 对应 link 顺序加一，<code>65535</code> 保留为 ignore。标签来自渲染器的几何分割结果，因此可与 CAD 部件及运动学状态对应。</p>
+
+    <h2>关键组件</h2>
+    <ul>
+      <li><code>pipeline/fusion/</code>：读取并适配 Fusion Assembly 源数据。</li>
+      <li><code>pipeline/kinematics/</code>：关节规范化、运动学树、前向运动学及闭环求解。</li>
+      <li><code>pipeline/render/batch_tree_annotation.py</code>：构建参考机构、生成轨迹并导出场景。</li>
+      <li><code>pipeline/render/multiview_annotation.py</code>：生成第二视角视频、相机和多视角样本。</li>
+      <li><code>pipeline/render/labels.py</code>：从 MuJoCo segmentation/depth buffer 导出标签。</li>
+      <li><code>pipeline/render/validate_sample.py</code> 与 <code>package_dataset.py</code>：质量验收、校验和及 manifest 打包。</li>
+      <li><code>pipeline/render/auto_annotation.py</code>：批处理入口，负责预览审核门禁、增量运行和失败分流。</li>
+    </ul>
+
+    <div class="note"><strong>来源边界：</strong>合成管线中几何标签是 <code>synthetic_gt</code>；运动幅度通常是管线策略值，不等同于真实机械行程。真实视频导入、SAM2/光流传播和 CoTracker 属于另一条扩展流程，传播结果是 <code>pseudo</code>，必须经人工逐帧复核后才能作为 <code>human_reference</code> 发布。</div>
+
+    <div class="cols">
+      <section class="plain"><h2>发布前检查</h2><p>帧数与 FPS、双视角一致性、相机/几何范围、MuJoCo FK 误差、标签类型和尺寸、部件 ID 映射，以及样本文件 checksums。</p></section>
+      <section class="plain orange"><h2>运行入口</h2><p>正式批处理：</p><pre>python3 -m pipeline.render.auto_annotation \
+  --data-root data/raw/batch_001 \
+  --output-root output/annoation</pre><p>预览需审核通过后，才会生成正式样本。</p></section>
+    </div>
+    <footer>实现依据：<code>docs/ANNOTATION_PIPELINE.md</code>、<code>pipeline/render/auto_annotation.py</code>、<code>labels.py</code> 与数据集 manifest。</footer>
+  </main>
+</body>
+</html>
